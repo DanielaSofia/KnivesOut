@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wishlists Wishlist[]
+  visits    Visit[]
+  reviews   Review[]
+}
+
+model Restaurant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  address     String?
+  city        String?
+  latitude    Decimal? @db.Decimal(10, 7)
+  longitude   Decimal? @db.Decimal(10, 7)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  wishlists Wishlist[]
+  visits    Visit[]
+}
+
+model Wishlist {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  restaurantId Int
+  createdAt    DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+}
+
+model Visit {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  restaurantId Int
+  visitedAt    DateTime @default(now())
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  review Review?
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  visitId   Int      @unique
+  rating    Decimal  @db.Decimal(2, 1)
+  text      String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+}

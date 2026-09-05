@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --foreground: #18181b;
+  
+    --surface: #ffffff;
+    --surface-muted: #f4f4f5;
+    --surface-elevated: #ffffff;
+  
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+  
+    --text: #18181b;
+    --text-muted: #71717a;
+    --text-subtle: #a1a1aa;
+  
+    --accent: #18181b;
+    --accent-foreground: #ffffff;
+    --action: #18181b;
+    --action-foreground: #ffffff;
   }
+  
+  .dark {
+    --background: #0c0d0f;
+    --foreground: #f4f1eb;
+  
+    --surface: #151719;
+    --surface-muted: #222528;
+    --surface-elevated: #1c2023;
+  
+    --border: #34383d;
+    --border-strong: #4a5158;
+  
+    --text: #f4f1eb;
+    --text-muted: #a7adb5;
+    --text-subtle: #7d858e;
+  
+    --accent: #f0a35c;
+    --accent-foreground: #17110b;
+    --action: #f0a35c;
+    --action-foreground: #17110b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
