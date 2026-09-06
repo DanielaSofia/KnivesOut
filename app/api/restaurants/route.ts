@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
+import { getCurrentUser } from "../../../lib/session";
 
 export async function GET(request: NextRequest) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Perfil não encontrado." }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
 
   const query = searchParams.get("q")?.trim() ?? "";
@@ -37,10 +44,10 @@ export async function GET(request: NextRequest) {
       ...(wishlist
         ? {
             wishlists: {
-              some: {},
+              some: { userId: user.id },
             },
             visits: {
-              none: {},
+              none: { userId: user.id },
             },
           }
         : {}),
@@ -48,7 +55,7 @@ export async function GET(request: NextRequest) {
       ...(visited
         ? {
             visits: {
-              some: {},
+              some: { userId: user.id },
             },
           }
         : {}),
@@ -61,11 +68,12 @@ export async function GET(request: NextRequest) {
 
     include: {
       visits: {
+        where: { userId: user.id },
         include: {
           review: true,
         },
       },
-      wishlists: true,
+      wishlists: { where: { userId: user.id } },
     },
   });
 

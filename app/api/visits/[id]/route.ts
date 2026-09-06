@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "../../../../lib/prisma";
+import { getCurrentUser } from "../../../../lib/session";
 
 type VisitRouteProps = {
   params: Promise<{ id: string }>;
@@ -16,7 +17,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Visita inválida." }, { status: 400 });
   }
 
-  const user = await prisma.user.findFirst({ orderBy: { id: "asc" } });
+  const user = await getCurrentUser();
 
   if (!user) {
     return NextResponse.json(

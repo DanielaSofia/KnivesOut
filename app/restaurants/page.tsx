@@ -4,15 +4,18 @@ import { Plus } from "lucide-react";
 import { RestaurantList } from "../../components/restaurants/restaurant-list";
 import { BottomNav } from "../../components/bottom-nav";
 import { prisma } from "../../lib/prisma";
+import { getCurrentUser } from "../../lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function RestaurantsPage() {
+  const user = await getCurrentUser();
+  const userId = user?.id ?? -1;
   const restaurants = await prisma.restaurant.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      visits: { include: { review: true } },
-      wishlists: true,
+      visits: { where: { userId }, include: { review: true } },
+      wishlists: { where: { userId } },
     },
   });
 

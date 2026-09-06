@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "../../../../../lib/prisma";
+import { getCurrentUser } from "../../../../../lib/session";
 
 type WishlistRouteProps = {
   params: Promise<{ id: string }>;
@@ -15,7 +16,7 @@ async function getContext(id: string) {
 
   const [restaurant, user] = await Promise.all([
     prisma.restaurant.findUnique({ where: { id: restaurantId } }),
-    prisma.user.findFirst({ orderBy: { id: "asc" } }),
+    getCurrentUser(),
   ]);
 
   if (!restaurant || !user) {

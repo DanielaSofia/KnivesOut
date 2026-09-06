@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 
 import { prisma } from "../../../lib/prisma";
+import { getCurrentUser } from "../../../lib/session";
 import { BottomNav } from "../../../components/bottom-nav";
 import { WishlistButton } from "../../../components/restaurants/wishlist-button";
 import { VisitForm } from "../../../components/restaurants/visit-form";
@@ -28,17 +29,21 @@ export default async function RestaurantPage({
     return <NotFound />;
   }
 
+  const user = await getCurrentUser();
+  const userId = user?.id ?? -1;
   const restaurant = await prisma.restaurant.findUnique({
     where: {
       id: restaurantId,
     },
     include: {
       wishlists: {
+        where: { userId },
         include: {
           user: true,
         },
       },
       visits: {
+        where: { userId },
         include: {
           user: true,
           review: true,
