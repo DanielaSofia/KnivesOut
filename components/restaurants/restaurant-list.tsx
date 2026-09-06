@@ -32,12 +32,13 @@ export function RestaurantList({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const isDefaultView = !query.trim() && filter === "all";
+  const visibleRestaurants = isDefaultView ? initialRestaurants : restaurants;
+  const isLoading = isDefaultView ? false : loading;
+  const hasError = isDefaultView ? false : error;
 
   useEffect(() => {
-    if (!query.trim() && filter === "all") {
-      setRestaurants(initialRestaurants);
-      setLoading(false);
-      setError(false);
+    if (isDefaultView) {
       return;
     }
 
@@ -94,7 +95,7 @@ export function RestaurantList({
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [query, filter, retryKey, initialRestaurants]);
+  }, [query, filter, retryKey, initialRestaurants, isDefaultView]);
 
   return (
     <>
@@ -157,7 +158,7 @@ export function RestaurantList({
       </div>
 
       <div className="mt-6">
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-3">
             <p className="sr-only" aria-live="polite">
               A carregar restaurantes
@@ -166,7 +167,7 @@ export function RestaurantList({
             <Skeleton />
             <Skeleton />
           </div>
-        ) : error ? (
+        ) : hasError ? (
           <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-8 text-center">
             <p className="font-medium">Não foi possível carregar</p>
 
@@ -182,7 +183,7 @@ export function RestaurantList({
               Tentar novamente
             </button>
           </div>
-        ) : restaurants.length === 0 ? (
+        ) : visibleRestaurants.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-8 text-center">
             <p className="font-medium">
               {filter === "favorite"
@@ -198,7 +199,7 @@ export function RestaurantList({
           </div>
         ) : (
           <div className="space-y-3">
-            {restaurants.map((restaurant) => (
+            {visibleRestaurants.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
                 restaurant={restaurant}

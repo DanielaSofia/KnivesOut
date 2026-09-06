@@ -45,7 +45,7 @@ async function main() {
     },
   });
 
-  const pizza = await prisma.restaurant.create({
+  await prisma.restaurant.create({
     data: {
       name: "Pizza Corner",
       description: "Pizza italiana",
