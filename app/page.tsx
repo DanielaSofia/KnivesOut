@@ -10,15 +10,20 @@ import {
 } from "lucide-react";
 
 import { prisma } from "../lib/prisma";
+import { getCurrentUser } from "../lib/session";
 import { BottomNav } from "../components/bottom-nav";
 import { RandomRestaurantButton } from "../components/restaurants/random-restaurant-button";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const currentUser = await getCurrentUser();
+  const userId = currentUser?.id ?? -1;
+
   const [recentVisits, wishlistCount, visitCount, favoriteCount] =
     await Promise.all([
       prisma.visit.findMany({
+        where: { userId },
         orderBy: {
           visitedAt: "desc",
         },
@@ -29,12 +34,13 @@ export default async function Home() {
         },
       }),
 
-      prisma.wishlist.count(),
+      prisma.wishlist.count({ where: { userId } }),
 
-      prisma.visit.count(),
+      prisma.visit.count({ where: { userId } }),
 
       prisma.review.count({
         where: {
+          userId,
           rating: {
             gte: 4.5,
           },
@@ -60,11 +66,11 @@ export default async function Home() {
           </div>
 
           <Link
-            href="/restaurants/new"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)]"
-            aria-label="Adicionar restaurante"
-          >
-            <Plus size={20} />
+              href="/restaurants/new"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)]"
+              aria-label="Adicionar restaurante"
+            >
+              <Plus size={20} />
           </Link>
         </header>
 

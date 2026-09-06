@@ -3,13 +3,16 @@ import { ArrowLeft, Bookmark, MapPin } from "lucide-react";
 
 import { BottomNav } from "../../components/bottom-nav";
 import { prisma } from "../../lib/prisma";
+import { getCurrentUser } from "../../lib/session";
 
 export default async function WishlistPage() {
+  const user = await getCurrentUser();
   const saved = await prisma.wishlist.findMany({
     where: {
+      userId: user?.id ?? -1,
       restaurant: {
         visits: {
-          none: {},
+          none: { userId: user?.id ?? -1 },
         },
       },
     },

@@ -3,12 +3,15 @@ import { ArrowLeft, Heart, MapPin, Utensils } from "lucide-react";
 
 import { BottomNav } from "../../components/bottom-nav";
 import { prisma } from "../../lib/prisma";
+import { getCurrentUser } from "../../lib/session";
 
 export default async function ProfilePage() {
+  const currentUser = await getCurrentUser();
+  const userId = currentUser?.id ?? -1;
   const [restaurants, visits, saved] = await Promise.all([
     prisma.restaurant.count(),
-    prisma.visit.count(),
-    prisma.wishlist.count(),
+    prisma.visit.count({ where: { userId } }),
+    prisma.wishlist.count({ where: { userId } }),
   ]);
 
   return (
@@ -16,7 +19,7 @@ export default async function ProfilePage() {
       <div className="mx-auto min-h-screen max-w-md bg-[var(--surface)] px-5">
         <header className="flex items-center gap-3 pt-6">
           <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-strong)]" aria-label="Voltar ao início"><ArrowLeft size={19} /></Link>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-subtle)]">A sua conta</p>
             <h1 className="mt-1 text-3xl font-bold">Perfil</h1>
           </div>

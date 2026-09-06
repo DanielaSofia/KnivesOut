@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "../../../../../lib/prisma";
+import { getCurrentUser } from "../../../../../lib/session";
 
 type VisitRouteProps = {
   params: Promise<{ id: string }>;
@@ -24,7 +25,7 @@ export async function POST(
     const body = await request.json();
     const [restaurant, user] = await Promise.all([
       prisma.restaurant.findUnique({ where: { id: restaurantId } }),
-      prisma.user.findFirst({ orderBy: { id: "asc" } }),
+      getCurrentUser(),
     ]);
 
     if (!restaurant || !user) {
