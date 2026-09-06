@@ -13,6 +13,8 @@ import { VisitForm } from "../../../components/restaurants/visit-form";
 import { VisitEntry } from "../../../components/restaurants/visit-entry";
 import { DeleteRestaurantButton } from "../../../components/restaurants/delete-restaurant-button";
 
+export const dynamic = "force-dynamic";
+
 type RestaurantPageProps = {
   params: Promise<{
     id: string;
@@ -43,7 +45,6 @@ export default async function RestaurantPage({
         },
       },
       visits: {
-        where: { userId },
         include: {
           user: true,
           review: true,

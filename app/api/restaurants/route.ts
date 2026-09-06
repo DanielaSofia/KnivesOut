@@ -68,7 +68,6 @@ export async function GET(request: NextRequest) {
 
     include: {
       visits: {
-        where: { userId: user.id },
         include: {
           review: true,
         },

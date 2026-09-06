@@ -5,6 +5,8 @@ import { BottomNav } from "../../components/bottom-nav";
 import { prisma } from "../../lib/prisma";
 import { getCurrentUser } from "../../lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function WishlistPage() {
   const user = await getCurrentUser();
   const saved = await prisma.wishlist.findMany({

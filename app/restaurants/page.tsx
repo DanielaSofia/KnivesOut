@@ -14,7 +14,7 @@ export default async function RestaurantsPage() {
   const restaurants = await prisma.restaurant.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      visits: { where: { userId }, include: { review: true } },
+      visits: { include: { review: true } },
       wishlists: { where: { userId } },
     },
   });
