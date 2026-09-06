@@ -6,6 +6,8 @@ import { ThemeToggle } from "../../components/settings/theme-toggle";
 import { UserSwitcher } from "../../components/user-switcher";
 import { getAvailableUsers, getCurrentUser } from "../../lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function SettingsPage() {
   const [users, currentUser] = await Promise.all([
     getAvailableUsers(),
