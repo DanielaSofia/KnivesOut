@@ -30,7 +30,7 @@ export function ThemeToggle() {
       <ThemeButton
         active={theme === "light"}
         onClick={() => setTheme("light")}
-        label="Light"
+        label="Claro"
       >
         <Sun size={17} />
       </ThemeButton>
@@ -38,7 +38,7 @@ export function ThemeToggle() {
       <ThemeButton
         active={theme === "dark"}
         onClick={() => setTheme("dark")}
-        label="Dark"
+        label="Escuro"
       >
         <Moon size={17} />
       </ThemeButton>
@@ -46,7 +46,7 @@ export function ThemeToggle() {
       <ThemeButton
         active={theme === "system"}
         onClick={() => setTheme("system")}
-        label="System"
+        label="Sistema"
       >
         <Monitor size={17} />
       </ThemeButton>

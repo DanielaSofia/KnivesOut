@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  ChefHat,
-  Heart,
+  CalendarDays,
+  Bookmark,
   MapPin,
   Plus,
   Star,
@@ -11,16 +11,22 @@ import {
 
 import { prisma } from "../lib/prisma";
 import { BottomNav } from "../components/bottom-nav";
-import { ThemeToggle } from "../components/settings/theme-toggle";
+import { RandomRestaurantButton } from "../components/restaurants/random-restaurant-button";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [restaurants, wishlistCount, visitCount, favoriteCount] =
+  const [recentVisits, wishlistCount, visitCount, favoriteCount] =
     await Promise.all([
-      prisma.restaurant.findMany({
+      prisma.visit.findMany({
         orderBy: {
-          createdAt: "desc",
+          visitedAt: "desc",
         },
         take: 6,
+        include: {
+          restaurant: true,
+          review: true,
+        },
       }),
 
       prisma.wishlist.count(),
@@ -53,29 +59,25 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-
-            <Link
-              href="/restaurants/new"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)]"
-              aria-label="Add restaurant"
-            >
-              <Plus size={20} />
-            </Link>
-          </div>
+          <Link
+            href="/restaurants/new"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)]"
+            aria-label="Adicionar restaurante"
+          >
+            <Plus size={20} />
+          </Link>
         </header>
 
         {/* Welcome */}
         <section className="px-5 pb-6 pt-8">
           <p className="text-sm font-medium text-[var(--text-subtle)]">
-            Good morning
+            Bom dia
           </p>
 
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-[var(--text)]">
-            Where are we
+            O seu diário
             <br />
-            eating next?
+            gastronómico
           </h1>
 
           <div className="mt-5 flex gap-3">
@@ -84,53 +86,48 @@ export default async function Home() {
               className="flex flex-1 items-center justify-between rounded-2xl bg-[var(--action)] px-4 py-4 text-[var(--action-foreground)] transition-colors hover:brightness-105"
             >
               <div>
-                <p className="text-xs opacity-65">Explore</p>
-                <p className="mt-1 font-semibold">Find a restaurant</p>
+                <p className="text-xs opacity-80">Explorar</p>
+                <p className="mt-1 font-semibold">Encontrar um restaurante</p>
               </div>
 
               <ArrowRight size={20} />
             </Link>
 
-            <button
-              className="flex w-16 items-center justify-center rounded-2xl border border-[var(--border-strong)]"
-              aria-label="Escolher restaurante aleatoriamente"
-            >
-              🎲
-            </button>
+            <RandomRestaurantButton />
           </div>
         </section>
 
         {/* Stats */}
         <section className="grid grid-cols-3 gap-3 px-5">
           <Stat
-            icon={<Heart size={18} />}
+            icon={<Bookmark size={18} />}
             value={wishlistCount}
-            label="Wishlist"
+            label="Quero ir"
           />
 
           <Stat
             icon={<Utensils size={18} />}
             value={visitCount}
-            label="Visited"
+            label="Visitados"
           />
 
           <Stat
             icon={<Star size={18} />}
             value={favoriteCount}
-            label="Favorites"
+            label="Favoritos"
           />
         </section>
 
-        {/* Restaurants */}
+        {/* Diary */}
         <section className="mt-8">
           <div className="flex items-end justify-between px-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-subtle)]">
-                Your places
+                O seu diário
               </p>
 
               <h2 className="mt-1 text-xl font-bold">
-                Recently added
+                Últimas visitas
               </h2>
             </div>
 
@@ -138,49 +135,72 @@ export default async function Home() {
               href="/restaurants"
               className="text-sm font-semibold text-[var(--text-muted)]"
             >
-              See all
+              Ver restaurantes
             </Link>
           </div>
 
           <div className="mt-4 space-y-3 px-5">
-            {restaurants.map((restaurant) => (
+            {recentVisits.map((visit) => (
               <Link
-                key={restaurant.id}
-                href={`/restaurants/${restaurant.id}`}
+                key={visit.id}
+                href={`/restaurants/${visit.restaurant.id}`}
                 className="flex gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-sm transition hover:border-[var(--border-strong)] hover:shadow-md"
               >
                 <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-3xl">
-                  🍜
+                  🍽️
                 </div>
 
                 <div className="min-w-0 flex-1 py-1">
                   <h3 className="truncate font-semibold text-[var(--text)]">
-                    {restaurant.name}
+                    {visit.restaurant.name}
                   </h3>
 
                   <div className="mt-1 flex items-center gap-1 text-sm text-[var(--text-subtle)]">
                     <MapPin size={14} />
                     <span>
-                      {restaurant.city ?? "Unknown location"}
+                      {visit.restaurant.city ?? "Sem localização"}
                     </span>
                   </div>
 
-                  <div className="mt-2 flex items-center gap-2 text-xs text-[var(--text-subtle)]">
-                    <ChefHat size={13} />
-
-                    <span>
-                      {restaurant.description ?? "Restaurant"}
+                  <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-subtle)]">
+                    <span className="flex items-center gap-1">
+                      <CalendarDays size={13} />
+                      {new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium" }).format(new Date(visit.visitedAt))}
                     </span>
+
+                    {visit.review && (
+                      <span className="flex items-center gap-1 font-semibold text-[var(--text)]">
+                        <Star size={13} className="fill-current" />
+                        {Number(visit.review.rating).toFixed(1)}
+                      </span>
+                    )}
                   </div>
+
+                  {visit.review?.text && (
+                    <p className="mt-2 truncate text-xs text-[var(--text-muted)]">
+                      “{visit.review.text}”
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}
 
-            {restaurants.length === 0 && (
+            {recentVisits.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-8 text-center">
-                <p className="text-sm text-[var(--text-subtle)]">
-                  No restaurants yet.
-                </p>
+                  <p className="font-medium text-[var(--text)]">
+                    Ainda não há visitas no diário
+                  </p>
+
+                  <p className="mt-1 text-sm text-[var(--text-subtle)]">
+                    Registe a sua primeira experiência num restaurante.
+                  </p>
+
+                  <Link
+                    href="/restaurants"
+                    className="mt-4 inline-flex rounded-full bg-[var(--action)] px-4 py-2 text-sm font-semibold text-[var(--action-foreground)]"
+                  >
+                    Escolher restaurante
+                  </Link>
               </div>
             )}
           </div>

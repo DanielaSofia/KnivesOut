@@ -2,8 +2,35 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { RestaurantList } from "../../components/restaurants/restaurant-list";
+import { BottomNav } from "../../components/bottom-nav";
+import { prisma } from "../../lib/prisma";
 
-export default function RestaurantsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RestaurantsPage() {
+  const restaurants = await prisma.restaurant.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      visits: { include: { review: true } },
+      wishlists: true,
+    },
+  });
+
+  const initialRestaurants = restaurants.map((restaurant) => ({
+    id: restaurant.id,
+    name: restaurant.name,
+    city: restaurant.city,
+    description: restaurant.description,
+    visits: restaurant.visits.map((visit) => ({
+      review: visit.review
+        ? { rating: Number(visit.review.rating) }
+        : null,
+    })),
+    wishlists: restaurant.wishlists.map((wishlist) => ({
+      id: wishlist.id,
+    })),
+  }));
+
   return (
     <main className="min-h-screen bg-[var(--background)] pb-24">
       <div className="mx-auto min-h-screen max-w-md bg-[var(--surface)]">
@@ -14,7 +41,7 @@ export default function RestaurantsPage() {
             </p>
 
             <h1 className="mt-1 text-3xl font-bold tracking-tight">
-              Restaurants
+              Restaurantes
             </h1>
           </div>
 
@@ -27,8 +54,10 @@ export default function RestaurantsPage() {
         </header>
 
         <section className="px-5 pt-6">
-          <RestaurantList />
+          <RestaurantList initialRestaurants={initialRestaurants} />
         </section>
+
+        <BottomNav />
       </div>
     </main>
   );

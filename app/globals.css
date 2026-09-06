@@ -4,43 +4,49 @@
 :root {
   --background: #ffffff;
   --foreground: #18181b;
-  
-    --surface: #ffffff;
-    --surface-muted: #f4f4f5;
-    --surface-elevated: #ffffff;
-  
-    --border: #e4e4e7;
-    --border-strong: #d4d4d8;
-  
-    --text: #18181b;
-    --text-muted: #71717a;
-    --text-subtle: #a1a1aa;
-  
-    --accent: #18181b;
-    --accent-foreground: #ffffff;
-    --action: #18181b;
-    --action-foreground: #ffffff;
-  }
-  
-  .dark {
-    --background: #0c0d0f;
-    --foreground: #f4f1eb;
-  
-    --surface: #151719;
-    --surface-muted: #222528;
-    --surface-elevated: #1c2023;
-  
-    --border: #34383d;
-    --border-strong: #4a5158;
-  
-    --text: #f4f1eb;
-    --text-muted: #a7adb5;
-    --text-subtle: #7d858e;
-  
-    --accent: #f0a35c;
-    --accent-foreground: #17110b;
-    --action: #f0a35c;
-    --action-foreground: #17110b;
+
+  --surface: #ffffff;
+  --surface-muted: #f4f4f5;
+  --surface-elevated: #ffffff;
+
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+
+  --text: #18181b;
+  --text-muted: #52525b;
+  --text-subtle: #71717a;
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --focus: #18181b;
+
+  --accent: #18181b;
+  --accent-foreground: #ffffff;
+  --action: #18181b;
+  --action-foreground: #ffffff;
+}
+
+.dark {
+  --background: #0c0d0f;
+  --foreground: #f4f1eb;
+
+  --surface: #151719;
+  --surface-muted: #222528;
+  --surface-elevated: #1c2023;
+
+  --border: #34383d;
+  --border-strong: #4a5158;
+
+  --text: #f4f1eb;
+  --text-muted: #c0c4ca;
+  --text-subtle: #c4cad1;
+  --danger: #ffb4ab;
+  --danger-soft: #451a1a;
+  --focus: #f0a35c;
+
+  --accent: #f0a35c;
+  --accent-foreground: #17110b;
+  --action: #f0a35c;
+  --action-foreground: #17110b;
 }
 
 * {
@@ -49,6 +55,7 @@
 
 html {
   color-scheme: light;
+  -webkit-text-size-adjust: 100%;
 }
 html.dark {
   color-scheme: dark;
@@ -58,11 +65,35 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
 }
 
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--focus) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.ios-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 ::selection {

@@ -1,13 +1,16 @@
 import Link from "next/link";
 import {
   ArrowLeft,
-  CalendarDays,
-  Heart,
   MapPin,
   Star,
 } from "lucide-react";
 
 import { prisma } from "../../../lib/prisma";
+import { BottomNav } from "../../../components/bottom-nav";
+import { WishlistButton } from "../../../components/restaurants/wishlist-button";
+import { VisitForm } from "../../../components/restaurants/visit-form";
+import { VisitEntry } from "../../../components/restaurants/visit-entry";
+import { DeleteRestaurantButton } from "../../../components/restaurants/delete-restaurant-button";
 
 type RestaurantPageProps = {
   params: Promise<{
@@ -65,7 +68,7 @@ export default async function RestaurantPage({
       : null;
 
   return (
-    <main className="min-h-screen bg-[var(--background)] pb-10">
+    <main className="min-h-screen bg-[var(--background)] pb-24">
       <div className="mx-auto min-h-screen max-w-md bg-[var(--surface)]">
         {/* Header */}
         <header className="flex items-center justify-between px-5 pt-6">
@@ -76,12 +79,10 @@ export default async function RestaurantPage({
             <ArrowLeft size={19} />
           </Link>
 
-          <button
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-strong)]"
-            aria-label="Add to wishlist"
-          >
-            <Heart size={19} />
-          </button>
+          <WishlistButton
+            restaurantId={restaurant.id}
+            initialSaved={restaurant.wishlists.length > 0}
+          />
         </header>
 
         {/* Hero */}
@@ -92,7 +93,7 @@ export default async function RestaurantPage({
 
           <div className="pt-6">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-subtle)]">
-              Restaurant
+              Restaurante
             </p>
 
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--text)]">
@@ -114,8 +115,8 @@ export default async function RestaurantPage({
         {/* Rating */}
         <section className="px-5 pt-6">
           <div className="rounded-3xl bg-[var(--action)] p-5 text-[var(--action-foreground)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
-              Our verdict
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80">
+              A nossa avaliação
             </p>
 
             <div className="mt-3 flex items-end gap-3">
@@ -131,8 +132,8 @@ export default async function RestaurantPage({
 
                   <span className="text-sm font-medium">
                     {ratings.length === 1
-                      ? "1 review"
-                      : `${ratings.length} reviews`}
+                      ? "1 avaliação"
+                      : `${ratings.length} avaliações`}
                   </span>
                 </div>
               </div>
@@ -143,7 +144,7 @@ export default async function RestaurantPage({
         {/* Description */}
         {restaurant.description && (
           <section className="px-5 pt-7">
-            <h2 className="text-lg font-bold">About</h2>
+            <h2 className="text-lg font-bold">Sobre</h2>
 
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
               {restaurant.description}
@@ -156,82 +157,51 @@ export default async function RestaurantPage({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-subtle)]">
-                History
+                Histórico
               </p>
 
               <h2 className="mt-1 text-xl font-bold">
-                Visits
+                Visitas
               </h2>
             </div>
 
-            <button
-              className="rounded-full bg-[var(--action)] px-4 py-2 text-sm font-semibold text-[var(--action-foreground)]"
-            >
-              + Add visit
-            </button>
+            <VisitForm restaurantId={restaurant.id} />
           </div>
 
           <div className="mt-4 space-y-3">
             {restaurant.visits.map((visit) => (
-              <div
+              <VisitEntry
                 key={visit.id}
-                className="rounded-2xl border border-[var(--border)] p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">
-                      {visit.user.name}
-                    </p>
-
-                    <div className="mt-1 flex items-center gap-1.5 text-sm text-[var(--text-subtle)]">
-                      <CalendarDays size={14} />
-
-                      <span>
-                        {new Intl.DateTimeFormat("pt-PT", {
-                          dateStyle: "medium",
-                        }).format(new Date(visit.visitedAt))}
-                      </span>
-                    </div>
-                  </div>
-
-                  {visit.review && (
-                    <div className="flex items-center gap-1">
-                      <Star size={14} className="fill-current" />
-
-                      <span className="font-semibold">
-                        {Number(visit.review.rating).toFixed(1)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {visit.review?.text && (
-                  <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
-                    “{visit.review.text}”
-                  </p>
-                )}
-
-                {visit.notes && (
-                  <p className="mt-3 rounded-xl bg-[var(--background)] p-3 text-sm text-[var(--text-muted)]">
-                    {visit.notes}
-                  </p>
-                )}
-              </div>
+                id={visit.id}
+                userName={visit.user.name}
+                visitedAt={new Intl.DateTimeFormat("pt-PT", {
+                  dateStyle: "medium",
+                }).format(new Date(visit.visitedAt))}
+                rating={visit.review ? Number(visit.review.rating) : null}
+                reviewText={visit.review?.text ?? null}
+                notes={visit.notes}
+              />
             ))}
 
             {restaurant.visits.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-8 text-center">
                 <p className="font-medium">
-                  No visits yet.
+                  Ainda não há visitas.
                 </p>
 
                 <p className="mt-1 text-sm text-[var(--text-subtle)]">
-                  This could be your first one.
+                  Esta pode ser a sua primeira.
                 </p>
               </div>
             )}
           </div>
         </section>
+
+        <section className="px-5">
+          <DeleteRestaurantButton restaurantId={restaurant.id} />
+        </section>
+
+        <BottomNav />
       </div>
     </main>
   );
@@ -244,14 +214,14 @@ function NotFound() {
         <p className="text-4xl">🔪</p>
 
         <h1 className="mt-4 text-2xl font-bold">
-          Restaurant not found
+          Restaurante não encontrado
         </h1>
 
         <Link
           href="/restaurants"
           className="mt-5 inline-block rounded-full bg-[var(--action)] px-5 py-3 text-sm font-semibold text-[var(--action-foreground)]"
         >
-          Back to restaurants
+          Voltar aos restaurantes
         </Link>
       </div>
     </main>
