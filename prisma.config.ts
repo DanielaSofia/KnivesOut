@@ -7,7 +7,7 @@ const databaseUser = encodeURIComponent(process.env.DATABASE_USER ?? "");
 const databasePassword = encodeURIComponent(
   process.env.DATABASE_PASSWORD ?? "",
 );
-const databaseUrl =
+export const databaseUrl =
   process.env.DATABASE_URL ??
   `mysql://${databaseUser}:${databasePassword}@${process.env.DATABASE_HOST ?? "localhost"}:${process.env.DATABASE_PORT ?? "3306"}/${process.env.DATABASE_NAME ?? ""}`;
 

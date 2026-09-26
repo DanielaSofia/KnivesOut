@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { getCurrentUser } from "../../../lib/session";
-import { readOptionalText, readRequiredText } from "../../../lib/validation";
+import {
+  readOptionalText,
+  readOptionalUrl,
+  readRequiredText,
+} from "../../../lib/validation";
 
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
@@ -45,6 +49,7 @@ export async function GET(request: NextRequest) {
     filters.push({
       visits: {
         some: {
+          userId: user.id,
           review: { rating: { gte: 4.5 } },
         },
       },
@@ -100,12 +105,21 @@ export async function POST(request: NextRequest) {
       "A descrição",
       2000,
     );
+    const websiteResult = readOptionalUrl(body.websiteUrl, "O site");
+    const instagramResult = readOptionalUrl(
+      body.instagramUrl,
+      "O Instagram",
+    );
+    const facebookResult = readOptionalUrl(body.facebookUrl, "O Facebook");
 
     if (
       "error" in nameResult ||
       "error" in cityResult ||
       "error" in addressResult ||
-      "error" in descriptionResult
+      "error" in descriptionResult ||
+      "error" in websiteResult ||
+      "error" in instagramResult ||
+      "error" in facebookResult
     ) {
       return NextResponse.json(
         {
@@ -113,7 +127,10 @@ export async function POST(request: NextRequest) {
             ("error" in nameResult && nameResult.error) ||
             ("error" in cityResult && cityResult.error) ||
             ("error" in addressResult && addressResult.error) ||
-            ("error" in descriptionResult && descriptionResult.error),
+            ("error" in descriptionResult && descriptionResult.error) ||
+            ("error" in websiteResult && websiteResult.error) ||
+            ("error" in instagramResult && instagramResult.error) ||
+            ("error" in facebookResult && facebookResult.error),
         },
         { status: 400 },
       );
@@ -125,6 +142,9 @@ export async function POST(request: NextRequest) {
         city: cityResult.value,
         address: addressResult.value,
         description: descriptionResult.value,
+        websiteUrl: websiteResult.value,
+        instagramUrl: instagramResult.value,
+        facebookUrl: facebookResult.value,
       },
     });
 

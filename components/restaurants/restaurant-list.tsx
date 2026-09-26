@@ -4,11 +4,15 @@ import Link from "next/link";
 import { Bookmark, MapPin, Search, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { RestaurantPhoto } from "./restaurant-photo";
+
 type Restaurant = {
   id: number;
   name: string;
   city: string | null;
   description: string | null;
+  averageRating?: number | null;
+  ratingCount?: number;
   visits: {
     review: {
       rating: number;
@@ -222,10 +226,13 @@ function RestaurantCard({
     .filter((rating): rating is number => rating !== null && rating !== undefined);
 
   const average =
-    ratings.length > 0
-      ? ratings.reduce((sum, rating) => sum + Number(rating), 0) /
-        ratings.length
-      : null;
+    restaurant.averageRating !== undefined
+      ? restaurant.averageRating
+      : ratings.length > 0
+        ? ratings.reduce((sum, rating) => sum + Number(rating), 0) /
+          ratings.length
+        : null;
+  const ratingCount = restaurant.ratingCount ?? ratings.length;
 
   const inWishlist = restaurant.wishlists.length > 0;
 
@@ -235,9 +242,12 @@ function RestaurantCard({
       className="block rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-sm transition hover:shadow-md"
     >
       <div className="flex gap-4">
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-3xl">
-          🍽️
-        </div>
+        <RestaurantPhoto
+          restaurantId={restaurant.id}
+          alt={`Fotografia de ${restaurant.name}`}
+          className="h-24 w-24 shrink-0 rounded-xl object-cover"
+          fallbackClassName="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-3xl"
+        />
 
         <div className="min-w-0 flex-1 py-1">
           <div className="flex items-start justify-between gap-2">
@@ -261,8 +271,10 @@ function RestaurantCard({
               {restaurant.city ?? "Sem localização"}
             </span>
           </div>
+        </div>
 
-          <div className="mt-3 flex items-center gap-1.5">
+        <div className="flex w-16 shrink-0 flex-col items-end justify-center gap-1 text-right">
+          <div className="flex items-center gap-1">
             <Star size={14} className="fill-current" />
 
             <span className="text-sm font-medium">
@@ -271,9 +283,9 @@ function RestaurantCard({
                 : "Sem avaliação"}
             </span>
 
-            {ratings.length > 0 && (
+            {ratingCount > 0 && (
               <span className="text-xs text-[var(--text-subtle)]">
-                ({ratings.length})
+                ({ratingCount})
               </span>
             )}
           </div>

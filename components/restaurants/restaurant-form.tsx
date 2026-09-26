@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { FormEvent, ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RestaurantPhoto } from "./restaurant-photo";
 
 type RestaurantFormProps = {
   title: string;
@@ -14,12 +15,16 @@ type RestaurantFormProps = {
   method: "POST" | "PUT";
   backHref: string;
   footer?: ReactNode;
-  photoUrl?: string;
+  photoRestaurantId?: number;
+  initialError?: string;
   initialValues?: {
     name: string;
     city: string;
     address: string;
     description: string;
+    websiteUrl: string;
+    instagramUrl: string;
+    facebookUrl: string;
   };
 };
 
@@ -32,12 +37,13 @@ export function RestaurantForm({
   method,
   backHref,
   footer,
-  photoUrl,
+  photoRestaurantId,
+  initialError,
   initialValues,
 }: RestaurantFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError ?? "");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,7 +79,10 @@ export function RestaurantForm({
 
         if (!photoResponse.ok) {
           const photoError = (await photoResponse.json()) as { error?: string };
-          setError(photoError.error ?? "Não foi possível guardar a fotografia.");
+          const message = photoError.error ?? "Não foi possível guardar a fotografia.";
+          router.push(
+            `/restaurants/${data.id}/edit?photoError=${encodeURIComponent(message)}`,
+          );
           return;
         }
       }
@@ -106,11 +115,12 @@ export function RestaurantForm({
         </header>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-          {photoUrl && (
-            <img
-              src={photoUrl}
+          {photoRestaurantId && (
+            <RestaurantPhoto
+              restaurantId={photoRestaurantId}
               alt="Fotografia atual do restaurante"
               className="h-48 w-full rounded-2xl object-cover"
+              fallbackClassName="flex h-48 w-full items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-6xl"
             />
           )}
 
@@ -157,6 +167,34 @@ export function RestaurantForm({
             />
           </label>
 
+          <div className="space-y-4 border-t border-[var(--border)] pt-5">
+            <div>
+              <h2 className="font-semibold">Presença online</h2>
+              <p className="mt-1 text-xs font-normal text-[var(--text-subtle)]">
+                Adicione os links completos, começando por https://.
+              </p>
+            </div>
+
+            <UrlField
+              label="Site"
+              name="websiteUrl"
+              placeholder="https://exemplo.pt"
+              defaultValue={initialValues?.websiteUrl}
+            />
+            <UrlField
+              label="Instagram"
+              name="instagramUrl"
+              placeholder="https://instagram.com/..."
+              defaultValue={initialValues?.instagramUrl}
+            />
+            <UrlField
+              label="Facebook"
+              name="facebookUrl"
+              placeholder="https://facebook.com/..."
+              defaultValue={initialValues?.facebookUrl}
+            />
+          </div>
+
           {error && (
             <p className="rounded-xl bg-[var(--danger-soft)] p-3 text-sm text-[var(--danger)]" role="alert">
               {error}
@@ -176,6 +214,31 @@ export function RestaurantForm({
         {footer}
       </div>
     </main>
+  );
+}
+
+function UrlField({
+  label,
+  name,
+  placeholder,
+  defaultValue,
+}: {
+  label: string;
+  name: string;
+  placeholder: string;
+  defaultValue?: string;
+}) {
+  return (
+    <label className="block text-sm font-medium">
+      {label}
+      <input
+        name={name}
+        type="url"
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        className="mt-2 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none focus:border-[var(--accent)]"
+      />
+    </label>
   );
 }
 

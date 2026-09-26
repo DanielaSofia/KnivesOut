@@ -41,3 +41,27 @@ export function readRequiredText(
 
   return { value: result.value };
 }
+
+export function readOptionalUrl(
+  value: unknown,
+  field: string,
+  maxLength = 500,
+): TextResult {
+  const result = readOptionalText(value, field, maxLength);
+
+  if ("error" in result || result.value === null) {
+    return result;
+  }
+
+  try {
+    const url = new URL(result.value);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return { error: `${field} deve ser um link HTTP ou HTTPS.` };
+    }
+  } catch {
+    return { error: `${field} inválido.` };
+  }
+
+  return result;
+}

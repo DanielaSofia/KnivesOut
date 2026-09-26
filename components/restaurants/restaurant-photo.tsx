@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 export function RestaurantPhoto({
@@ -20,11 +21,16 @@ export function RestaurantPhoto({
   }
 
   return (
-    <img
-      src={`/api/restaurants/${restaurantId}/photo`}
-      alt={alt}
-      className={className}
-      onError={() => setHasPhoto(false)}
-    />
+    <div className={`relative ${className}`}>
+      <Image
+        src={`/api/restaurants/${restaurantId}/photo`}
+        alt={alt}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, 448px"
+        unoptimized
+        onError={() => setHasPhoto(false)}
+      />
+    </div>
   );
 }

@@ -6,10 +6,12 @@ import { prisma } from "../../../../lib/prisma";
 
 type EditRestaurantPageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ photoError?: string | string[] }>;
 };
 
 export default async function EditRestaurantPage({
   params,
+  searchParams,
 }: EditRestaurantPageProps) {
   const restaurantId = Number((await params).id);
 
@@ -24,12 +26,20 @@ export default async function EditRestaurantPage({
       city: true,
       address: true,
       description: true,
+      websiteUrl: true,
+      instagramUrl: true,
+      facebookUrl: true,
     },
   });
 
   if (!restaurant) {
     notFound();
   }
+
+  const photoErrorValue = (await searchParams)?.photoError;
+  const photoError = Array.isArray(photoErrorValue)
+    ? photoErrorValue[0]
+    : photoErrorValue;
 
   return (
     <RestaurantForm
@@ -41,12 +51,16 @@ export default async function EditRestaurantPage({
       method="PUT"
       backHref={`/restaurants/${restaurantId}`}
       footer={<DeleteRestaurantButton restaurantId={restaurantId} />}
-      photoUrl={`/api/restaurants/${restaurantId}/photo`}
+      photoRestaurantId={restaurantId}
+      initialError={photoError}
       initialValues={{
         name: restaurant.name,
         city: restaurant.city ?? "",
         address: restaurant.address ?? "",
         description: restaurant.description ?? "",
+        websiteUrl: restaurant.websiteUrl ?? "",
+        instagramUrl: restaurant.instagramUrl ?? "",
+        facebookUrl: restaurant.facebookUrl ?? "",
       }}
     />
   );

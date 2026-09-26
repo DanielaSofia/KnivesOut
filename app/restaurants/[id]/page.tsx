@@ -1,10 +1,12 @@
 import Link from "next/link";
 import {
   ArrowLeft,
+  Globe,
   Pencil,
   MapPin,
   Star,
 } from "lucide-react";
+import { FaFacebookF, FaInstagram } from "react-icons/fa6";
 
 import { prisma } from "../../../lib/prisma";
 import { getCurrentUser } from "../../../lib/session";
@@ -34,46 +36,35 @@ export default async function RestaurantPage({
 
   const user = await getCurrentUser();
   const userId = user?.id ?? -1;
-  const restaurant = await prisma.restaurant.findUnique({
-    where: {
-      id: restaurantId,
-    },
-    include: {
-      wishlists: {
-        where: { userId },
-        include: {
-          user: true,
+  const [restaurant, ratingSummary] = await Promise.all([
+    prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      include: {
+        wishlists: {
+          where: { userId },
+          include: { user: true },
+        },
+        visits: {
+          include: { user: true, review: true },
+          orderBy: { visitedAt: "desc" },
+          take: 50,
         },
       },
-      visits: {
-        include: {
-          user: true,
-          review: true,
-        },
-        orderBy: {
-          visitedAt: "desc",
-        },
-        take: 50,
-      },
-    },
-  });
+    }),
+    prisma.review.aggregate({
+      where: { visit: { restaurantId } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+  ]);
 
   if (!restaurant) {
     return <NotFound />;
   }
 
-  const ratings = restaurant.visits
-    .map((visit) => visit.review?.rating)
-    .filter(
-      (rating): rating is NonNullable<typeof rating> =>
-        rating !== null && rating !== undefined,
-    );
-
-  const averageRating =
-    ratings.length > 0
-      ? ratings.reduce((sum, rating) => sum + Number(rating), 0) /
-        ratings.length
-      : null;
+  const averageRating = ratingSummary._avg.rating
+    ? Number(ratingSummary._avg.rating)
+    : null;
 
   return (
     <main className="min-h-screen bg-[var(--background)] pb-24">
@@ -121,7 +112,16 @@ export default async function RestaurantPage({
               {restaurant.name}
             </h1>
 
-            <div className="mt-3 flex items-center gap-1.5 text-sm text-[var(--text-subtle)]">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                [restaurant.address, restaurant.city, restaurant.name]
+                  .filter(Boolean)
+                  .join(", "),
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 flex w-fit items-center gap-1.5 text-sm text-[var(--text-subtle)] underline-offset-4 hover:underline"
+            >
               <MapPin size={15} />
 
               <span>
@@ -129,6 +129,24 @@ export default async function RestaurantPage({
                   ? `${restaurant.address}${restaurant.city ? `, ${restaurant.city}` : ""}`
                   : restaurant.city ?? "Unknown location"}
               </span>
+            </a>
+
+            <div className="mt-4 flex items-center gap-2">
+              {restaurant.websiteUrl && (
+                <SocialLink href={restaurant.websiteUrl} label="Site">
+                  <Globe size={17} />
+                </SocialLink>
+              )}
+              {restaurant.instagramUrl && (
+                <SocialLink href={restaurant.instagramUrl} label="Instagram">
+                  <FaInstagram size={18} aria-hidden="true" />
+                </SocialLink>
+              )}
+              {restaurant.facebookUrl && (
+                <SocialLink href={restaurant.facebookUrl} label="Facebook">
+                  <FaFacebookF size={17} aria-hidden="true" />
+                </SocialLink>
+              )}
             </div>
           </div>
         </section>
@@ -152,9 +170,9 @@ export default async function RestaurantPage({
                   <Star size={17} className="fill-current" />
 
                   <span className="text-sm font-medium">
-                    {ratings.length === 1
+                    {ratingSummary._count._all === 1
                       ? "1 avaliação"
-                      : `${ratings.length} avaliações`}
+                      : `${ratingSummary._count._all} avaliações`}
                   </span>
                 </div>
               </div>
@@ -221,6 +239,29 @@ export default async function RestaurantPage({
         <BottomNav />
       </div>
     </main>
+  );
+}
+
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={label}
+      title={label}
+      className="group flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text-muted)] shadow-sm transition-[border-color,background-color,color,transform] hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[var(--surface-muted)] hover:text-[var(--accent)] focus-visible:border-[var(--accent)] active:translate-y-0"
+    >
+      <span className="transition-transform group-hover:scale-110">{children}</span>
+    </a>
   );
 }
 

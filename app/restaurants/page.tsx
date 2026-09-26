@@ -23,11 +23,38 @@ export default async function RestaurantsPage() {
     },
   });
 
+  const ratings = await prisma.review.findMany({
+    where: {
+      visit: {
+        restaurantId: { in: restaurants.map((restaurant) => restaurant.id) },
+      },
+    },
+    select: {
+      rating: true,
+      visit: { select: { restaurantId: true } },
+    },
+  });
+  const ratingsByRestaurant = new Map<number, number[]>();
+
+  for (const rating of ratings) {
+    const restaurantRatings = ratingsByRestaurant.get(rating.visit.restaurantId) ?? [];
+    restaurantRatings.push(Number(rating.rating));
+    ratingsByRestaurant.set(rating.visit.restaurantId, restaurantRatings);
+  }
+
   const initialRestaurants = restaurants.map((restaurant) => ({
     id: restaurant.id,
     name: restaurant.name,
     city: restaurant.city,
     description: restaurant.description,
+    averageRating: (() => {
+      const restaurantRatings = ratingsByRestaurant.get(restaurant.id) ?? [];
+      return restaurantRatings.length > 0
+        ? restaurantRatings.reduce((sum, rating) => sum + rating, 0) /
+            restaurantRatings.length
+        : null;
+    })(),
+      ratingCount: (ratingsByRestaurant.get(restaurant.id) ?? []).length,
     visits: restaurant.visits.map((visit) => ({
       review: visit.review
         ? { rating: Number(visit.review.rating) }

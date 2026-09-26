@@ -1,15 +1,9 @@
 import "dotenv/config";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../app/generated/prisma/client";
+import { databaseUrl } from "../prisma.config";
 
-const adapter = new PrismaMariaDb({
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT),
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  connectionLimit: 5,
-});
+const adapter = new PrismaMariaDb(databaseUrl);
 
 const prisma = new PrismaClient({ adapter });
 
@@ -22,7 +16,11 @@ async function findOrCreateRestaurant(data: {
   longitude?: number;
 }) {
   const existing = await prisma.restaurant.findFirst({
-    where: { name: data.name },
+    where: {
+      name: data.name,
+      address: data.address,
+      city: data.city,
+    },
   });
 
   return existing ?? prisma.restaurant.create({ data });
@@ -91,6 +89,7 @@ async function main() {
       where: {
         userId: danny.id,
         restaurantId: ramen.id,
+        visitedAt: new Date("2026-08-20"),
       },
     })) ??
     (await prisma.visit.create({
