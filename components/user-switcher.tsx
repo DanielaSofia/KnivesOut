@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type UserOption = {
@@ -15,7 +14,6 @@ export function UserSwitcher({
   users: UserOption[];
   currentUserId: number | null;
 }) {
-  const router = useRouter();
   const [selectedId, setSelectedId] = useState(currentUserId ?? users[0]?.id ?? "");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -33,7 +31,7 @@ export function UserSwitcher({
       });
 
       if (response.ok) {
-        router.refresh();
+        window.location.reload();
       }
     } finally {
       setIsSaving(false);

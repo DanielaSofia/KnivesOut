@@ -30,10 +30,15 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.json({ userId });
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const isSecure = forwardedProto
+    ? forwardedProto.split(",", 1)[0].trim() === "https"
+    : new URL(request.url).protocol === "https:";
+
   response.cookies.set(ACTIVE_USER_COOKIE, String(userId), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecure,
     maxAge: 60 * 60 * 24 * 365,
     path: "/",
   });

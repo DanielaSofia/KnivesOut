@@ -6,7 +6,7 @@ import {
   Home,
   Map,
   Search,
-  Settings2,
+  UserRound,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -15,7 +15,7 @@ const items = [
   { href: "/restaurants", label: "Explorar", icon: Search },
   { href: "/wishlist", label: "Quero ir", icon: Bookmark },
   { href: "/map", label: "Mapa", icon: Map },
-  { href: "/settings", label: "Definições", icon: Settings2 },
+  { href: "/profile", label: "Perfil", icon: UserRound },
 ];
 
 export function BottomNav() {

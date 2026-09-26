@@ -30,6 +30,11 @@ model Restaurant {
   description String?  @db.Text
   address     String?
   city        String?
+  websiteUrl  String?
+  instagramUrl String?
+  facebookUrl String?
+  tiktokUrl   String?
+  whatsappUrl String?
   latitude    Decimal? @db.Decimal(10, 7)
   longitude   Decimal? @db.Decimal(10, 7)
   createdAt   DateTime @default(now())
@@ -64,6 +69,9 @@ model Visit {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   review Review?
+
+  @@index([userId, visitedAt])
+  @@index([restaurantId, visitedAt])
 }
 
 model Review {

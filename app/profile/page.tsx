@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, Heart, MapPin, Utensils } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Settings2, Utensils } from "lucide-react";
 
 import { BottomNav } from "../../components/bottom-nav";
 import { prisma } from "../../lib/prisma";
 import { getCurrentUser } from "../../lib/session";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const currentUser = await getCurrentUser();
@@ -26,8 +28,8 @@ export default async function ProfilePage() {
         </header>
         <section className="mt-8 rounded-3xl bg-[var(--action)] p-6 text-[var(--action-foreground)]">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-2xl">🔪</div>
-          <h2 className="mt-5 text-2xl font-bold">O seu diário</h2>
-          <p className="mt-1 text-sm opacity-80">Todos os lugares que quer recordar.</p>
+          <h2 className="mt-5 text-2xl font-bold">{currentUser?.name ?? "O seu perfil"}</h2>
+          <p className="mt-1 text-sm opacity-80">O diário pessoal de restaurantes.</p>
         </section>
         <section className="mt-5 grid grid-cols-3 gap-3">
           <Stat icon={<MapPin size={18} />} value={restaurants} label="Lugares" />
@@ -35,6 +37,10 @@ export default async function ProfilePage() {
           <Stat icon={<Heart size={18} />} value={saved} label="Guardados" />
         </section>
         <Link href="/restaurants" className="mt-6 flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 font-semibold">Ver todos os restaurantes <span aria-hidden="true">→</span></Link>
+        <Link href="/settings" className="mt-3 flex items-center gap-3 rounded-2xl border border-[var(--border)] p-4 font-semibold">
+          <Settings2 size={19} className="text-[var(--text-subtle)]" />
+          <span>Definições</span>
+        </Link>
         <BottomNav />
       </div>
     </main>
