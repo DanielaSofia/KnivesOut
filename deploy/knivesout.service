@@ -4,7 +4,6 @@ After=network-online.target mariadb.service
 Wants=network-online.target
 
 [Service]
-Type=simple
 User=danilobo
 Group=danilobo
 WorkingDirectory=/home/danilobo/ko/knivesout
@@ -12,6 +11,7 @@ Environment=NODE_ENV=production
 Environment=PORT=3000
 Environment=PATH=/home/danilobo/.nvm/versions/node/v24.20.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=-/home/danilobo/ko/knivesout/.env
+ExecStartPre=/home/danilobo/.nvm/versions/node/v24.20.0/bin/npm run build
 ExecStart=/home/danilobo/.nvm/versions/node/v24.20.0/bin/npm run start
 Restart=on-failure
 RestartSec=5

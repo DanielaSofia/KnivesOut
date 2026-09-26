@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowLeft,
+  Pencil,
   MapPin,
   Star,
 } from "lucide-react";
@@ -11,7 +12,7 @@ import { BottomNav } from "../../../components/bottom-nav";
 import { WishlistButton } from "../../../components/restaurants/wishlist-button";
 import { VisitForm } from "../../../components/restaurants/visit-form";
 import { VisitEntry } from "../../../components/restaurants/visit-entry";
-import { DeleteRestaurantButton } from "../../../components/restaurants/delete-restaurant-button";
+import { RestaurantPhoto } from "../../../components/restaurants/restaurant-photo";
 
 export const dynamic = "force-dynamic";
 
@@ -86,17 +87,30 @@ export default async function RestaurantPage({
             <ArrowLeft size={19} />
           </Link>
 
-          <WishlistButton
-            restaurantId={restaurant.id}
-            initialSaved={restaurant.wishlists.length > 0}
-          />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/restaurants/${restaurant.id}/edit`}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-strong)]"
+              aria-label="Editar restaurante"
+            >
+              <Pencil size={17} />
+            </Link>
+
+            <WishlistButton
+              restaurantId={restaurant.id}
+              initialSaved={restaurant.wishlists.length > 0}
+            />
+          </div>
         </header>
 
         {/* Hero */}
         <section className="px-5 pt-6">
-          <div className="flex h-56 items-center justify-center rounded-3xl bg-[var(--surface-muted)] text-7xl">
-            🍽️
-          </div>
+          <RestaurantPhoto
+            restaurantId={restaurant.id}
+            alt={`Fotografia de ${restaurant.name}`}
+            className="h-56 w-full rounded-3xl object-cover"
+            fallbackClassName="flex h-56 items-center justify-center rounded-3xl bg-[var(--surface-muted)] text-7xl"
+          />
 
           <div className="pt-6">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-subtle)]">
@@ -202,10 +216,6 @@ export default async function RestaurantPage({
               </div>
             )}
           </div>
-        </section>
-
-        <section className="px-5">
-          <DeleteRestaurantButton restaurantId={restaurant.id} />
         </section>
 
         <BottomNav />

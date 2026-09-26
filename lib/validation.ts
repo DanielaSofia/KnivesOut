@@ -1,5 +1,5 @@
-type TextResult =
-  | { value: string | null }
+type TextResult<T extends string | null = string | null> =
+  | { value: T }
   | { error: string };
 
 export function readOptionalText(
@@ -28,7 +28,7 @@ export function readRequiredText(
   value: unknown,
   field: string,
   maxLength: number,
-): TextResult {
+): TextResult<string> {
   const result = readOptionalText(value, field, maxLength);
 
   if ("error" in result) {
@@ -39,5 +39,5 @@ export function readRequiredText(
     return { error: `${field} é obrigatório.` };
   }
 
-  return result;
+  return { value: result.value };
 }
