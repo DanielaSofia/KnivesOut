@@ -15,6 +15,7 @@ import { WishlistButton } from "../../../components/restaurants/wishlist-button"
 import { VisitForm } from "../../../components/restaurants/visit-form";
 import { VisitEntry } from "../../../components/restaurants/visit-entry";
 import { RestaurantPhoto } from "../../../components/restaurants/restaurant-photo";
+import { listVisitPhotos } from "../../../lib/visit-photos";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,13 @@ export default async function RestaurantPage({
   if (!restaurant) {
     return <NotFound />;
   }
+
+  const visits = await Promise.all(
+    restaurant.visits.map(async (visit) => ({
+      ...visit,
+      photos: await listVisitPhotos(visit.id),
+    })),
+  );
 
   const averageRating = ratingSummary._avg.rating
     ? Number(ratingSummary._avg.rating)
@@ -193,7 +201,7 @@ export default async function RestaurantPage({
 
         {/* Visits */}
         <section className="px-5 pt-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-subtle)]">
                 Histórico
@@ -208,21 +216,25 @@ export default async function RestaurantPage({
           </div>
 
           <div className="mt-4 space-y-3">
-            {restaurant.visits.map((visit) => (
+            {visits.map((visit) => (
               <VisitEntry
                 key={visit.id}
                 id={visit.id}
+                restaurantId={restaurant.id}
+                canEdit={user?.id === visit.userId}
                 userName={visit.user.name}
                 visitedAt={new Intl.DateTimeFormat("pt-PT", {
                   dateStyle: "medium",
                 }).format(new Date(visit.visitedAt))}
+                visitedAtValue={new Date(visit.visitedAt).toISOString().slice(0, 10)}
                 rating={visit.review ? Number(visit.review.rating) : null}
                 reviewText={visit.review?.text ?? null}
                 notes={visit.notes}
+                photos={visit.photos}
               />
             ))}
 
-            {restaurant.visits.length === 0 && (
+            {visits.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-8 text-center">
                 <p className="font-medium">
                   Ainda não há visitas.

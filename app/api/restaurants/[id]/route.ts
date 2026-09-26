@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "../../../../lib/prisma";
-import { Prisma } from "../../../../generated/prisma/client";
+import { Prisma } from "../../../generated/prisma/client";
 import {
   readOptionalText,
   readOptionalUrl,
