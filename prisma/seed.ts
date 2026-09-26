@@ -3,8 +3,8 @@ import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../app/generated/prisma/client";
 
 const adapter = new PrismaMariaDb({
-  host: "localhost",
-  port: 3306,
+  host: process.env.DATABASE_HOST,
+  port: Number(process.env.DATABASE_PORT),
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
@@ -12,6 +12,21 @@ const adapter = new PrismaMariaDb({
 });
 
 const prisma = new PrismaClient({ adapter });
+
+async function findOrCreateRestaurant(data: {
+  name: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+}) {
+  const existing = await prisma.restaurant.findFirst({
+    where: { name: data.name },
+  });
+
+  return existing ?? prisma.restaurant.create({ data });
+}
 
 async function main() {
   console.log("🌱 Seeding KnivesOut...");
@@ -34,33 +49,27 @@ async function main() {
     },
   });
 
-  const ramen = await prisma.restaurant.create({
-    data: {
-      name: "Ramen House",
-      description: "Ramen japonês",
-      address: "Rua Exemplo 123",
-      city: "Braga",
-      latitude: 41.5454,
-      longitude: -8.4265,
-    },
+  const ramen = await findOrCreateRestaurant({
+    name: "Ramen House",
+    description: "Ramen japonês",
+    address: "Rua Exemplo 123",
+    city: "Braga",
+    latitude: 41.5454,
+    longitude: -8.4265,
   });
 
-  await prisma.restaurant.create({
-    data: {
-      name: "Pizza Corner",
-      description: "Pizza italiana",
-      address: "Avenida Exemplo 45",
-      city: "Braga",
-    },
+  await findOrCreateRestaurant({
+    name: "Pizza Corner",
+    description: "Pizza italiana",
+    address: "Avenida Exemplo 45",
+    city: "Braga",
   });
 
-  const sushi = await prisma.restaurant.create({
-    data: {
-      name: "Sushi Garden",
-      description: "Sushi e cozinha japonesa",
-      address: "Rua dos Restaurantes 10",
-      city: "Porto",
-    },
+  const sushi = await findOrCreateRestaurant({
+    name: "Sushi Garden",
+    description: "Sushi e cozinha japonesa",
+    address: "Rua dos Restaurantes 10",
+    city: "Porto",
   });
 
   await prisma.wishlist.createMany({
@@ -77,17 +86,29 @@ async function main() {
     skipDuplicates: true,
   });
 
-  const visit = await prisma.visit.create({
-    data: {
-      userId: danny.id,
-      restaurantId: ramen.id,
-      visitedAt: new Date("2026-08-20"),
-      notes: "Fomos experimentar o ramen.",
-    },
-  });
+  const visit =
+    (await prisma.visit.findFirst({
+      where: {
+        userId: danny.id,
+        restaurantId: ramen.id,
+      },
+    })) ??
+    (await prisma.visit.create({
+      data: {
+        userId: danny.id,
+        restaurantId: ramen.id,
+        visitedAt: new Date("2026-08-20"),
+        notes: "Fomos experimentar o ramen.",
+      },
+    }));
 
-  await prisma.review.create({
-    data: {
+  await prisma.review.upsert({
+    where: { visitId: visit.id },
+    update: {
+      rating: 4.5,
+      text: "Muito bom! O caldo estava excelente.",
+    },
+    create: {
       userId: danny.id,
       visitId: visit.id,
       rating: 4.5,

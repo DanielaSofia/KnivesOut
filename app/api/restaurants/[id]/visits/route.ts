@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 
 import { prisma } from "../../../../../lib/prisma";
 import { getCurrentUser } from "../../../../../lib/session";
+import { readOptionalText } from "../../../../../lib/validation";
 
 type VisitRouteProps = {
   params: Promise<{ id: string }>;
@@ -36,12 +37,40 @@ export async function POST(
     }
 
     const rating = Number(body.rating);
-    const hasRating = Number.isFinite(rating) && rating >= 0.5 && rating <= 5;
+    const hasRating = body.rating !== undefined && body.rating !== "";
+    if (hasRating && (!Number.isFinite(rating) || rating < 0.5 || rating > 5)) {
+      return NextResponse.json(
+        { error: "A avaliação deve estar entre 0,5 e 5 estrelas." },
+        { status: 400 },
+      );
+    }
+
     const visitedAt = body.visitedAt ? new Date(body.visitedAt) : new Date();
+
+    const notesResult = readOptionalText(body.notes, "As notas", 2000);
+    const reviewResult = readOptionalText(body.review, "O comentário", 2000);
+
+    if ("error" in notesResult || "error" in reviewResult) {
+      return NextResponse.json(
+        {
+          error:
+            ("error" in notesResult && notesResult.error) ||
+            ("error" in reviewResult && reviewResult.error),
+        },
+        { status: 400 },
+      );
+    }
 
     if (Number.isNaN(visitedAt.getTime())) {
       return NextResponse.json(
         { error: "A data da visita é inválida." },
+        { status: 400 },
+      );
+    }
+
+    if (visitedAt > new Date()) {
+      return NextResponse.json(
+        { error: "A data da visita não pode estar no futuro." },
         { status: 400 },
       );
     }
@@ -51,16 +80,13 @@ export async function POST(
         userId: user.id,
         restaurantId,
         visitedAt,
-        notes: typeof body.notes === "string" ? body.notes.trim() || null : null,
+        notes: notesResult.value,
         review: hasRating
           ? {
               create: {
                 userId: user.id,
                 rating,
-                text:
-                  typeof body.review === "string"
-                    ? body.review.trim() || null
-                    : null,
+                text: reviewResult.value,
               },
             }
           : undefined,

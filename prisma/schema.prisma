@@ -64,6 +64,9 @@ model Visit {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   review Review?
+
+  @@index([userId, visitedAt])
+  @@index([restaurantId, visitedAt])
 }
 
 model Review {

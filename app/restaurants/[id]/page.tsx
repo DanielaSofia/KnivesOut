@@ -52,6 +52,7 @@ export default async function RestaurantPage({
         orderBy: {
           visitedAt: "desc",
         },
+        take: 50,
       },
     },
   });
