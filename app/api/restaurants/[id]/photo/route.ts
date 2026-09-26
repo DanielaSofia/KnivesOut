@@ -10,7 +10,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "../../../../lib/prisma";
+import { prisma } from "../../../../../lib/prisma";
 
 const photoTypes = {
   "image/gif": "gif",
